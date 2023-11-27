@@ -18,7 +18,7 @@
         "overtrue/laravel-wechat": "^6.1",
         "socialiteproviders/qq": "^4.2",
         "tencentcloud/tencentcloud-sdk-php": "^3.0",
-        "zgldh/qiniu-laravel-storage": "^0.10.3"
+        "zgldh/qiniu-laravel-storage": "0.10.3"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
