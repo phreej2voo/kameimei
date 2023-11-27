@@ -1,0 +1,37 @@
+{
+  "status": 0,
+  "msg": "success",
+  "data": {
+    "list": [
+      {
+        "cate": {
+          "tagid": 656773,
+          "name": "\u62db\u751f\u5ba3\u4f20"
+        },
+        "scene": [
+          {
+            "id": 9242940,
+            "name": "\u5927\u5b66\u9ad8\u6821\u804c\u4e1a\u6280\u672f\u5b66\u6821\u804c\u9ad8\u5927\u4e13\u5b66\u6821\u62db\u751f\u7b80\u7ae0\u62db\u751f\u5ba3\u4f20",
+            "code": "S1105736895",
+            "cover": "http:\/\/album.h5.kameimei.cn\/Fq2IU7tEU9JyalHuKhIoxvXV0GoR",
+            "price": 19
+          },
+          {
+            "id": 9206673,
+            "name": "\u745c\u4f3d\u57f9\u8bad\u5ba3\u4f20\u63a8\u5e7f\u6a21\u677f",
+            "code": "S101093VE9B",
+            "cover": "http:\/\/album.h5.kameimei.cn\/FsjlUuLOKevSg9YQfzCpVUtTEXSq",
+            "price": 19
+          },
+          {
+            "id": 9206677,
+            "name": "\u745c\u4f3d\u4f1a\u6240\u745c\u4f3d\u751f\u6d3b\u9986\u745c\u73c8\u4e2d\u5fc3\u745c\u4f3d\u8bfe\u5802\u62db\u751f\u6d3b\u52a8\u5ba3\u4f20",
+            "code": "S1010447NP7",
+            "cover": "http:\/\/album.h5.kameimei.cn\/FsmyLHRY00uJh3_OnXcby4dX1z-v",
+            "price": 19
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "success": true,
+  "code": 200,
+  "msg": "操作成功",
+  "obj": null,
+  "map": {
+    "pageNo": 1,
+    "count": 0,
+    "pageSize": 20
+  },
+  "list": null
+}

@@ -1,0 +1,35 @@
+{
+  "editor_domain":"http://m.kameimei.cn/",
+  "preview_domain":"http://m.kmmqt.com/",
+  "id":8880760,
+  "tpl_id":0,
+  "code":"S909CJ6GL4",
+  "name":"中式中国风时尚大气高端古典古风婚礼邀请函结婚请帖",
+  "description":"",
+  "cover":"http://album.h5.kameimei.cn/o_1bv194ii8123615t31ofkem0rsh4o.png",
+  "is_luckmoney":1,
+  "is_gift":1,
+  "is_wish":1,
+  "price":0,
+  "property":null,
+  "bgAudio":{
+    "url":"http://album.h5.kameimei.cn/382d840029ce42cbbf0fcd17145810ba.mp3",
+    "name":"none",
+    "id":0
+  },
+  "main_class_id":102,
+  "sub_class_id":656653,
+  "is_show_btn":1,
+  "is_show_preview":0,
+  "is_show_guide":0,
+  "is_wish_h5":1,
+  "barrage_text":"送上您的祝福",
+  "wechat_nickname":null,
+  "wechat_avatar":null,
+  "end_page":1,
+  "specify_invite":{
+    "name":null,
+    "url":null,
+    "invite_word":null
+  }
+}

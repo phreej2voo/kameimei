@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "code": 200,
+  "msg": "操作成功",
+  "obj": null,
+  "map": null,
+  "list": [
+    {
+      "status": 1,
+      "license": 1,
+      "name": "方正正黑体",
+      "fontFamily": "fangzheng_zht",
+      "woffPath": "static/fonts/fangzheng_zht.woff"
+    },
+    {
+      "status": 1,
+      "license": 1,
+      "name": "方正清刻本悦宋简体",
+      "fontFamily": "fangzheng_qkbysjt",
+      "woffPath": "static/fonts/fangzheng_qkbysjt.woff"
+    },
+    {
+      "status": 1,
+      "license": 1,
+      "name": "阿里汉仪智能黑体",
+      "fontFamily": "alhyznht",
+      "woffPath": "static/fonts/alhyznht.woff"
+    }
+  ]
+}
