@@ -204,8 +204,18 @@ Route::group(['middleware' => 'auth'], function () {
     Route::get('api/product/cat/listProdByParam', [SceneController::class, 'listProdByParam'])->name('api.image');
     
     Route::post('m/base/file/uptokens', [SceneController::class, 'upTokens'])->name('api.upTokens');
-    
-    Route::get('m/base/file/uptoken', [SceneController::class, 'upTokens'])->name('api.upTokens');
+
+    Route::post('m/base/file/info/save', [SceneController::class, 'putFile'])->name('api.putFile');
+
+    Route::post('m/base/file/delete', [SceneController::class, 'deleteFile'])->name('api.deleteFile');
+
+    Route::get('m/material/user/list/upload', [SceneController::class, 'uploadList'])->name('api.uploadList');
+
+    Route::get('m/base/file/tag/my', [SceneController::class, 'myTag'])->name('api.myTag');
+
+    Route::get('m/e/scene/createPage/{id}', [SceneController::class, 'createPage'])->name('api.createPage');
+
+    Route::get('m/e/scene/delPage/{id}', [SceneController::class, 'delPage'])->name('api.delPage');
 
     Route::post('m/e/font/info', [SceneController::class, 'fontList'])->name('api.fontList');
 

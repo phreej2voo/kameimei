@@ -1,9 +1,9 @@
 # /vendor/
 /vendor/asm89
 /vendor/brick
+/vendor/dflydev
 /vendor/doctrine
 /vendor/dragonmantank
-/vendor/dflydev
 /vendor/easywechat-composer
 /vendor/egulias
 /vendor/encore

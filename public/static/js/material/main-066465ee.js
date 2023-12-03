@@ -6442,6 +6442,7 @@
         return l.a.post(u.b.server + "/m/base/file/info/save", e)
     }
     function a(e, t) {
+        console.log('e', e,'t', t);
         return l.a.post(u.b.server + "/m/base/file/delete", h.a.stringify({
             id: e,
             backup: t

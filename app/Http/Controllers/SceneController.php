@@ -9,6 +9,7 @@ use App\Models\FormData;
 use App\Models\Gift;
 use App\Models\GiftRecord;
 use App\Models\InviteList;
+use App\Models\Qiniu;
 use App\Models\Scene;
 use App\Models\ScenePage;
 use App\Models\User;
@@ -146,8 +147,8 @@ class SceneController extends Controller
                         }
                     }
                     $element['pageId'] = $item['id'];
-                    return $element;
-                }, $item['content']);
+                    return $element??[];
+                }, $item['content']??[]);
                 return [
                     'id' => $item['id'],
                     'name' => '',
@@ -844,8 +845,8 @@ class SceneController extends Controller
                             $element['properties'][$field] = Storage::disk('scene')->url($element['properties'][$field]);
                         }
                     }
-                    return $element;
-                }, $item['content']);
+                    return $element??[];
+                }, $item['content']??[]);
                 return [
                     'id' => $item['id'],
                     'elements' => $item['content'],
@@ -922,32 +923,205 @@ class SceneController extends Controller
     {
         return $this->pcSuccess();
     }
-    
-     /**
+
+    /**
      * 七牛云上传获取生成Token
      * @param Request $request
      * @return mixed
      */
     public function upTokens(Request $request)
     {
-        try {
-            //require 'path_to_sdk/vendor/autoload.php';
-            // 初始化签权对象
-            $auth = new \Qiniu\Auth(env('QINIU_ACCESS_KEY'), env('QINIU_SECRET_KEY'));
-            var_dump($auth);
-        } catch (\Exception $exception) {
-            var_dump($exception->getMessage());
-        }
-        
-        $list = ['list' => []];
+        $token = \Storage::disk('qiniu')->getAdapter()->uploadToken();
         return $this->pcSuccess(
             null,
             null,
             [
                 'expire' => 3600,
-                'token' => 'yDWfmKBgXodTgwOjl5n2Gy7T3_PNGAXNX57JgXja:UGVkEsG3DfK9b9QjMUW7MdtZ8kc=:eyJzY29wZSI6Img1LWFsYnVtIiwiZGVhZGxpbmUiOjE2OTk1MjE2ODZ9'
+                'token' => $token
             ]
         );
+    }
+
+    /**
+     * 上传文件
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function putFile(Request $request)
+    {
+        /** @var  $file */
+        $file = $request->input('path');
+        /** @var  $data */
+        $data = $request->all();
+        /** @var  $qiniu */
+        $qiniu = new Qiniu([
+            'name' => $file,
+            'extName' => 'img',
+            'fileType' => $data['fileType'],
+            'bizType' => $data['bizType'],
+            'path' => '/scene/'.$file,
+            'tmbPath' => $file,
+            'createTime' => time(),
+            'createUser' => Auth::user()->id
+        ]);
+        if (!$qiniu->save()) {
+            return $this->error('上传文件失败');
+        }
+
+        /** @var  $disk */
+        $disk = \Storage::disk('qiniu');
+        //文件是否存在
+        if (!$disk->exists($file)) {
+            return $this->error('上传文件不存在');
+        }
+        //获取文件内容
+        /** @var  $contents */
+        $contents = $disk->get($file);
+        \Storage::disk('scene')->put($file, $contents);
+        //上传文件到七牛云
+        /** @var  $ret */
+        $ret = $disk->put($file, $contents);
+        if (!$ret) {
+            return $this->error('上传文件到七牛云失败');
+        }
+
+        return $this->pcSuccess(
+            $qiniu,
+            null,
+            null
+        );
+    }
+
+    /**
+     * 删除文件
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteFile(Request $request)
+    {
+        /** @var  $id */
+        $id = $request->input('id');
+        if (empty($id)) {
+            return $this->error('非法请求');
+        }
+        /** @var  $set */
+        $set = Qiniu::query()->whereIn('id', $id)->get();
+        if (empty($collect)) {
+            return $this->error('非法请求');
+        }
+
+        foreach ($set as $qiniu) {
+            $qiniu->status = 0;
+            $qiniu->save();
+            /*if ($qiniu->save()) {
+                \Storage::disk('qiniu')->delete($qiniu->name);
+            }*/
+        }
+
+        return $this->success();
+    }
+
+    /**
+     * 七牛云上传图片列表
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function uploadList(Request $request)
+    {
+        /** @var  $perPage */
+        $perPage = $request->input('pageSize', 20);
+        /** @var  $pageList */
+        $pageList = Qiniu::query()
+            ->where('createUser', Auth::user()->id)
+            ->where('status', 1)
+            ->orderBy('create_time')
+            ->paginate($perPage, ['*'], 'pageNo')
+            ->toArray();
+
+        return $this->pcSuccess(
+            null,
+            collect($pageList['list'])->transform(function ($item) {
+                return $item;
+            })->toArray(),
+            [
+                'count' => $pageList['map']['count'],
+                'end' => $pageList['map']['page_size'] * $pageList['map']['page'] >= $pageList['map']['count'],
+                'pageNo' => $pageList['map']['page'],
+                'pageSize' => $pageList['map']['page_size'],
+            ]
+        );
+    }
+
+    /**
+     * My tag
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function myTag(Request $request)
+    {
+        return $this->pcSuccess(
+            null,
+            [],
+            null
+        );
+    }
+
+    /**
+     * 新加常规页
+     * @param $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function createPage($id, Request $request)
+    {
+        /** @var  $scenePage */
+        $scenePage = ScenePage::query()->find($id);
+        if (empty($scenePage)) {
+            return $this->error('参数id非法请求');
+        }
+
+        /** @var  $newPage */
+        $newPage = new ScenePage([
+            'scene_id' => $scenePage->scene_id,
+            'num' => $scenePage->num+1
+        ]);
+        if(!($newPage->save())) {
+            return $this->error('新加常规页失败');
+        }
+
+        return $this->pcSuccess([
+            'id' => $newPage->id,
+            'sceneId' => $newPage->scene_id,
+            'num' => $newPage->num,
+            'name' => null,
+            'properties' => null,
+            'elements' => null,
+            'price' => null,
+            'isPaid' => null,
+            'forms' => null,
+            'groups' => null
+        ]);
+    }
+
+    /**
+     * 删除页面
+     * @param $id
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function delPage($id, Request $request)
+    {
+        /** @var  $scenePage */
+        $scenePage = ScenePage::query()->find($id);
+        if (empty($scenePage)) {
+            return $this->error('参数id非法请求');
+        }
+
+        if (!$scenePage->delete()) {
+            return $this->error('删除页面失败');
+        }
+
+        return $this->success();
     }
     
     public function pcSavePage(Request $request)
@@ -982,7 +1156,11 @@ class SceneController extends Controller
                 foreach ($srcFields as $field) {
                     $src = $element['properties'][$field] ?? '';
                     if (!empty($src)) {
-                        $element['properties'][$field] = pathinfo($src, PATHINFO_BASENAME);
+                        if ($field == 'src' && strpos($src, '<iframe') === 0) {
+                            $element['properties'][$field] = $src;
+                        } else {
+                            $element['properties'][$field] = pathinfo($src, PATHINFO_BASENAME);
+                        }
                     }
                 }
             }

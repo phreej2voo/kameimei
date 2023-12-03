@@ -74,6 +74,20 @@ return [
             'root' => public_path('/static/img'),
             'visibility' => 'public',
             'url' => env('APP_URL') . '/static/img/',
+        ],
+
+        'qiniu' => [
+            'driver'  => 'qiniu',
+            'domains' => [
+                'default'   =>  'qiniu.daxitie.com', //你的七牛域名
+                'https'     =>  'm.daxitie.com',	//你的HTTPS域名
+                'custom'    =>  'static.daxitie.com',	//你的自定义域名
+            ],
+            'access_key'=>  env('QINIU_ACCESS_KEY'),	//AccessKey
+            'secret_key'=>  env('QINIU_SECRET_KEY'),	//SecretKey
+            'bucket'    =>  env('QINIU_BUCKET'),	//Bucket名字
+            'notify_url'    =>  '',	//持久化处理回调地址
+            'url'   =>  'http://of8kfibjo.bkt.clouddn.com/',	// 填写文件访问根url
         ]
     ],
 
