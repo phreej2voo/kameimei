@@ -19,6 +19,7 @@ Route::group([
     $router->get('/', [\App\Admin\Controllers\HomeController::class, 'index'])->name('home');
     $router->get('scene/crawl', [\App\Admin\Controllers\SceneCrawlController::class, 'index']);
     $router->get('scene/crawl2', [\App\Admin\Controllers\SceneCrawlController::class, 'index2'])->name('scene.crawl2');
+    $router->get('scene/crawl3', [\App\Admin\Controllers\SceneCrawlController::class, 'index3'])->name('scene.index3');
     $router->resource('user', UserController::class);
     $router->resource('scene', SceneController::class);
     $router->resource('category/scene', SceneCategoryController::class);

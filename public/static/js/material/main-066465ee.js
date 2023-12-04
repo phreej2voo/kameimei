@@ -1753,7 +1753,10 @@
                     tagId: this.uploadOptions.tagId || 0
                 };
                 this.api.file.uploadFile(c).then(function(e) {
-                    return o.notifier.success("上传成功: " + a)
+                    // return o.notifier.success("上传成功: " + a)
+                    // o.api.file.getUploadFiles(c)
+                    o.onComplete && o.onComplete(o.uploadOptions.tagId)
+                    return o.notifier.success("上传成功")
                 }).catch(function(e) {
                     return e && o.logger.error(e)
                 })

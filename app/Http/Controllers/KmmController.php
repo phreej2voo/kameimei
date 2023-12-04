@@ -44,7 +44,7 @@ class KmmController extends Controller
             'extName' => 'img',
             'fileType' => $data['fileType'],
             'bizType' => $data['bizType'],
-            'path' => 'scene/'.$file,
+            'path' => '/scene/'.$file,
             'tmbPath' => $file,
             'createTime' => time(),
             'createUser' => Auth::user()->id
