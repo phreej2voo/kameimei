@@ -142,6 +142,10 @@ class PayController extends Controller
                 $params['openid'] = Session::get('pay_openid');
             } elseif (Auth::hasUser()) {
                 $params['openid'] = Auth::user()->wx_openid;
+            } else {
+                $account = isWeixin() ? 'default' : 'open-platform';
+                $wechat = session('wechat.oauth_user.' . $account);
+                session(['pay_openid' => $wechat['id']]);
             }
             $orderResult = $this->createOrder($params);
             if (empty($orderResult) || $orderResult['return_code'] != 'SUCCESS') {

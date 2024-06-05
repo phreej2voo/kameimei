@@ -1653,6 +1653,54 @@ a {
     background: linear-gradient(180deg,#63a8d3,#1580c2)
 }
 
+.kmm_home .nav_list .item:nth-child(9) i {
+    background: #dcc522;
+    background: -webkit-linear-gradient(top,#dcc522,#dcc522);
+    background: linear-gradient(180deg,#dcc522,#dcc522)
+}
+
+.kmm_home .nav_list .item:nth-child(10) i {
+    background: #2242dc;
+    background: -webkit-linear-gradient(top,#2242dc,#2242dc);
+    background: linear-gradient(180deg,#2242dc,#2242dc)
+}
+
+.kmm_home .nav_list .item:nth-child(11) i {
+    background: #4880e8;
+    background: -webkit-linear-gradient(top, #56a3d4, #4b473e);
+    background: linear-gradient(180deg,#56a3d4,#4b473e)
+}
+
+.kmm_home .nav_list .item:nth-child(12) i {
+    background: #07f3bc;
+    background: -webkit-linear-gradient(top,#07f3bc,#07f3bc);
+    background: linear-gradient(180deg,#07f3bc,#07f3bc)
+}
+
+.kmm_home .nav_list .item:nth-child(13) i {
+    background: #d38a63;
+    background: -webkit-linear-gradient(top, #d38a63, #c28315);
+    background: linear-gradient(180deg,#d38a63,#c28315)
+}
+
+.kmm_home .nav_list .item:nth-child(14) i {
+    background: #48e860;
+    background: -webkit-linear-gradient(top, #63d365, #15c240);
+    background: linear-gradient(180deg,#63d365,#15c240)
+}
+
+.kmm_home .nav_list .item:nth-child(15) i {
+    background: #0beab2;
+    background: -webkit-linear-gradient(top, #34ea0b, #a8c215);
+    background: linear-gradient(180deg,#34ea0b,#a8c215)
+}
+
+.kmm_home .nav_list .item:nth-child(16) i {
+    background: #580ddb;
+    background: -webkit-linear-gradient(top, #6731a7, #2915c2);
+    background: linear-gradient(180deg,#6731a7,#2915c2)
+}
+
 .kmm_home .show_list {
     margin-top: 12px
 }

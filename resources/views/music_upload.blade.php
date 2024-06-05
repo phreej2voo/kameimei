@@ -453,6 +453,7 @@
                         extensions: "mp3,m4a"
                     }]
                 },
+                sid: _Sid,
                 chunk_size: '4mb',
                 uptoken: '{!! $code !!}',
                 uptoken_url: '{!! route('api.getMusicUpToken', ['code' => $code]) !!}',

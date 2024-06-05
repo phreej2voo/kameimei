@@ -22,6 +22,15 @@
 <script type="text/javascript" src="{{asset('static/js/preview.long.js')}}"></script>
 
 <script>
+    // /Android/i.test(navigator.userAgent) || /Linux/i.test(navigator.appVersion)
+    if (!isAndroid()) {
+        document.getElementsByClassName('bgm_btn')[0].click();
+    }
+
+    function isAndroid() {
+        return /Android/i.test(navigator.userAgent) || /Linux/i.test(navigator.appVersion)
+    }
+
     function getQueryString(name) {
         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
         var r = window.location.search.substr(1).match(reg);

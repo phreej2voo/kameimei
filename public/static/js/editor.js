@@ -33187,7 +33187,7 @@ object-assign
                         url: "".concat(or.editor, "h5/edit/music"),
                         data: {
                             id: e,
-                            mp3_url: t
+                            mp3_url: t + '.mp3'
                         }
                     })
                 }
@@ -34287,6 +34287,7 @@ object-assign
                                 checked: "001" == c
                             })
                         }, "不播放音乐"), 0 < l.length && l.map(function (e) {
+                            console.log('参数输出111', e)
                             return E.a.createElement(jo.a.Item, {
                                 key: e.id,
                                 onClick: function () {
@@ -34299,6 +34300,7 @@ object-assign
                                 className: "fa fa-star"
                             }), " ", e.name)
                         }), o.map(function (e, t) {
+                            console.log('参数输出222', e)
                             return E.a.createElement(jo.a.Item, {
                                 key: e.id,
                                 onClick: function () {

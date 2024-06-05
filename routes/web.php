@@ -74,9 +74,17 @@ Route::group([] ,function() {
 
     Route::get('music/upload/list', [MusicController::class, 'getUserUploadList'])->name('api.getUserUploadList');
 
-    Route::get('music/del', [MusicController::class, 'del'])->name('api.delMusic');
+    Route::post('music/del', [MusicController::class, 'del'])->name('api.delMusic');
 
     Route::get('h5/edit/music_uptoken', [MusicController::class, 'getUptoken'])->name('api.getMusicUpToken');
+
+    Route::get('crawl/code', [SceneController::class, 'crawlCode'])->name('api.crawlCode');
+
+    Route::get('crawl/urlJson', [SceneController::class, 'crawlUrlJson'])->name('api.crawlUrlJson');
+
+    Route::get('crawl/secondCat', [SceneController::class, 'secondCategory'])->name('api.secondCategory');
+
+    Route::post('crawl/handle', [SceneController::class, 'sceneCrawl'])->name('api.sceneCrawl');
 
     Route::post('card/pay/luckmoney', [PayController::class, 'luckMoney'])->name('api.payLuckMoney');
 

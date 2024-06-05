@@ -22,6 +22,7 @@ Route::group([
     $router->get('scene/crawl3', [\App\Admin\Controllers\SceneCrawlController::class, 'index3'])->name('scene.index3');
     $router->resource('user', UserController::class);
     $router->resource('scene', SceneController::class);
+    $router->resource('music', MusicController::class);
     $router->resource('category/scene', SceneCategoryController::class);
     $router->resource('category/music', MusicCategoryController::class);
     $router->any('category/subCategory', [\App\Admin\Controllers\SceneCategoryController::class, 'getSubCategoryList']);

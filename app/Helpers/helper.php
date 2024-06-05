@@ -27,11 +27,11 @@ function getDomainArr(): array
 /**
  * @throws \GuzzleHttp\Exception\GuzzleException
  */
-function storeFile($path, $disk = 'scene'): string
+function storeFile($path, $disk = 'scene', $type=null): string
 {
     $fileName = getFileMd5($path);
     $extension = pathinfo($path)['extension'] ?? '';
-    $fullName = $fileName . (!empty($extension) ? ('.' . $extension) : '');
+    $fullName = $fileName . (!empty($extension) ? ('.' . $extension) : (!is_null($type) ? ('.' . $type) : ''));
     $query = parse_url($path, PHP_URL_QUERY);
     if (!Storage::disk($disk)->exists($fullName)) {
         try {

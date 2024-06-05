@@ -215,7 +215,7 @@
     </style>
 
     <script src="https://cdn.staticfile.org/jquery/3.3.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.2.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://m.daxitie.com/static/css/font-awesome.min.css">
 </head>
 
 <body onselectstart="return true;" ondragstart="return false;">

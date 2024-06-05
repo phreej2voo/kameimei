@@ -22,6 +22,18 @@
 <script type="text/javascript" src="{{asset('static/js/preview.js')}}"></script>
 
 <script>
+    if (/ipad|iphone/i.test(navigator.userAgent)) {
+        document.getElementsByClassName('bgm_btn')[0].click();
+    }
+    console.log('has pay open id', {{$hasPayOpenId}})
+
+    @if(!$hasPayOpenId)
+        // {!! $hasPayOpenId !!}
+        console.log('has pay open id', {{$hasPayOpenId}})
+        console.log("https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx0404bf24913c71e4&redirect_uri=" + encodeURIComponent(window.location.href) + "&response_type=code&scope=snsapi_userinfo&state=wx#wechat_redirect");
+        window.location.href = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx0404bf24913c71e4&redirect_uri=" + encodeURIComponent(window.location.href) + "&response_type=code&scope=snsapi_userinfo&state=wx#wechat_redirect"
+    @endif
+
     function getQueryString(name) {
         var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
         var r = window.location.search.substr(1).match(reg);
@@ -79,6 +91,9 @@
     // 	}
     // });
 
+    window.addEventListener('load', () => {
+        document.getElementById('bg_music').play();
+    });
 </script>
 
 
@@ -92,5 +107,6 @@
 {{--    })();--}}
 {{--</script>--}}
 
+<iframe src="https://m.daxitie.com/scene/4c98ba85a5e0d0b1bd4b7d8316c7444c.m4a" autoplay="true" allow="autoplay" hidden />
 </body>
 </html>

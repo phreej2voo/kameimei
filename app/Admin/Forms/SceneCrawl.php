@@ -251,4 +251,26 @@ class SceneCrawl extends Form
         }
         return view('admin.recently_crawl', compact('sceneList'));
     }
+
+    public static function hunbeiCrawlPage()
+    {
+        /** @var  $topCategoryList */
+        $topCategoryList = Category::query()
+            ->where('type', 1)
+            ->where('pid', 0)
+            ->orderBy('sort')
+            ->pluck('name', 'id')->toArray();
+        /** @var  $secondCategoryList */
+        $secondCategoryList = Category::query()
+            ->where('type', 1)
+            ->where('pid', '!=', 0)
+            ->orderBy('sort')
+            ->pluck('name', 'id')->toArray();
+        /** @var  $pageTypeList */
+        $pageTypeList = [
+            1 => '翻页',
+            2 => '长页'
+        ];
+        return view('admin.hunbei_crawl', compact('topCategoryList', 'secondCategoryList', 'pageTypeList'));
+    }
 }

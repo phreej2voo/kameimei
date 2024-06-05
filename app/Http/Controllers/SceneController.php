@@ -18,12 +18,16 @@ use EasyWeChat\Kernel\Exceptions\InvalidConfigException;
 use EasyWeChat\Kernel\Exceptions\RuntimeException;
 use EasyWeChat\Kernel\Http\StreamResponse;
 use EasyWeChat\OfficialAccount\Application;
-use Encore\Admin\Form;
+use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use TencentCloud\Common\Credential;
 use TencentCloud\Common\Profile\ClientProfile;
@@ -36,6 +40,39 @@ class SceneController extends Controller
 {
     public function view($code, Request $request)
     {
+        /** @var  $appId */
+        $appId = config('wechat.official_account.default.app_id');
+        /** @var  $secret */
+        $secret = config('wechat.official_account.default.secret');
+
+        if (isset($_GET['code'])) {
+            /** @var  $url */
+            $url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code';
+            /** @var  $url */
+            $url = sprintf($url, $appId, $secret, $_GET["code"], 'snsapi_base');
+            /** @var  $response */
+            $response = Http::get($url);
+            /** @var  $jsonObj */
+            $jsonObj = json_decode($response, true);
+            if (isset($jsonObj['openid'])) {
+                session(['pay_openid' => $jsonObj['openid']]);
+            }
+        }
+        //dd(Session::has('pay_openid'), !Session::has('pay_openid'));
+        if (!Session::has('pay_openid')) {
+            /** @var  $currentUrl */
+            $currentUrl = URL::current();
+            /** @var  $openId */
+            $openId = $this->getOpenid($currentUrl); //获取用户的openid
+            session(['pay_openid' => $openId]);
+
+            /** @var  $url */
+            $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=%s&scope=%s&state=wx#wechat_redirect';
+            /** @var  $url */
+            $url = sprintf($url, $appId, urlencode($currentUrl), 'code', 'snsapi_base');
+            redirect($url);
+        }
+
         $scene = Scene::query()->where('code', $code)->first();
         if (!$scene) {
             return $this->error(sprintf('模板[%s]不存在', $scene));
@@ -62,7 +99,7 @@ class SceneController extends Controller
                 $result['specify_invite'] = [
                     'name' => $invite->name,
                     'invite_word' => $invite->word,
-                    'url' => Storage::disk('scene')->get($invite->url),
+                    'url' => !empty($invite->url) ? Storage::disk('scene')->get($invite->url) : '',
                 ];
             }
         }
@@ -70,9 +107,60 @@ class SceneController extends Controller
         Scene::query()->where('id', $scene->id)->increment('view_count', 1);
         
         if ($scene->show_type == 1) {
-            return view('preview', ['scene' => $result]);
+            return view('preview', ['scene' => $result, 'hasPayOpenId' => !!Session::has('pay_openid')]);
         } else {
-            return view('longview', ['scene' => $result]);   
+            return view('longview', ['scene' => $result, 'hasPayOpenId' => !!Session::has('pay_openid')]);
+        }
+    }
+
+    /**
+     * 微信获取用户openid
+     * @param $currentUrl
+     * @return mixed|void
+     */
+    private function getOpenid($currentUrl) {
+        // config('wechat.official_account.default.app_id'),
+        // config('wechat.official_account.default.secret'));
+
+        /** @var  $appId */
+        $appId = config('wechat.official_account.default.app_id');
+        /** @var  $secret */
+        $secret = config('wechat.official_account.default.secret');
+        if (!isset($_GET['code'])) {
+            /** @var  $url */
+            // $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid='.$appId.'&redirect_uri='.urlencode($currentUrl).'&response_type=code&scope=snsapi_base&state=wx#wechat_redirect';
+            /** @var  $url */
+            $url = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=%s&redirect_uri=%s&response_type=%s&scope=%s&state=wx#wechat_redirect';
+            /** @var  $url */
+            $url = sprintf($url, $appId, urlencode($currentUrl), 'code', 'snsapi_base');
+            // header("Location:".$url);
+            // return redirect()->away($url);
+            redirect($url);
+            // Redirect::to($url);
+        } else {
+            /** @var  $url */
+            $url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code';
+            /** @var  $url */
+            $url = sprintf($url, $appId, $secret, $_GET["code"], 'snsapi_base');
+
+            /** @var  $getTokenUrl */
+            // $getTokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid='.$appId.'&secret='.$secret.'&code='.$_GET["code"].'&grant_type=authorization_code';
+            /** @var  $ch */
+            /*$ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $getTokenUrl);
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            $response = curl_exec($ch);
+            curl_close($ch);*/
+            /** @var  $response */
+            $response = Http::get($url);
+            /** @var  $jsonObj */
+            $jsonObj = json_decode($response, true);
+
+            return $jsonObj['openid'];
         }
     }
     
@@ -110,13 +198,379 @@ class SceneController extends Controller
                 $result['specify_invite'] = [
                     'name' => $invite->name,
                     'invite_word' => $invite->word,
-                    'url' => Storage::disk('scene')->get($invite->url),
+                    'url' => !empty($invite->url) ? Storage::disk('scene')->get($invite->url) : '',
                 ];
             }
         }
         Scene::query()->where('id', $scene->id)->increment('view_count', 1);
         
         return view('longview', ['scene' => $result]);
+    }
+
+    /**
+     * 根据婚贝模板编码获取
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @throws GuzzleException
+     */
+    public function crawlCode(Request $request)
+    {
+        /** @var  $sceneId */
+        $sceneId = $request->input('code');
+        if (Scene::query()->where('source_code', $sceneId)->exists()) {
+            admin_error('模板[' . $sceneId . ']已存在');
+            return redirect()->away(route('scene.crawl3'));
+        }
+
+        // Create a client with headers and a base URI
+        /** @var  $client */
+        $client = new Client([
+            'headers' => [
+                'Content-Length' => 57,
+                'Content-Type' => 'application/x-www-form-urlencoded',
+                'Host' => 'h5.hunbei.com'
+            ],
+            'base_uri' => 'https://h5.hunbei.com'
+        ]);
+        /** @var  $response */
+        $response = $client->request('POST', '/index/Preview/getScene1', [
+            'form_params' => [
+                'scene_id' => $sceneId,
+                'preview' => 1,
+                'openid' => '',
+                'fUser' => '',
+                'stop' => 0,
+                'show' => 'all'
+            ]
+        ]);
+        /** @var  $data */
+        $data = json_decode($response->getBody()->getContents());
+        if ($data->msg != 'success') {
+            return $this->error('当前页面链接已更新，请重试');
+        }
+
+        return $this->success([
+            'data' => $data->data,
+        ]);
+    }
+
+    /**
+     * 获取婚贝模板JSON文件数据
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws GuzzleException
+     */
+    public function crawlUrlJson(Request $request)
+    {
+        /** @var  $json */
+        $json = $request->input('json');
+        /** @var  $client */
+        $client = new Client([
+            'base_uri' => 'https://h5cdn.hunbei.com'
+        ]);
+        /** @var  $response */
+        $response = $client->get($json);
+        // dd('json file', $json, 'craw url json', $response, 'get contents', $response->getBody()->getContents());
+        /** @var  $data */
+        $data = json_decode($response->getBody()->getContents());
+        if ($data->msg != 'success') {
+            return $this->error('当前页面链接已更新，请重试');
+        }
+
+        return $this->success([
+            'data' => $data->data,
+        ]);
+    }
+
+
+    /**
+     * 获取二级品类
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function secondCategory(Request $request)
+    {
+        /** @var  $data */
+        $data = $request->input('data');
+        /** @var  $data */
+        $data = json_decode($data);
+        /** @var  $urlJson */
+        $urlJson = json_decode($data->urlJson);
+        $data->urlJson = $urlJson;
+        /** @var  $elements */
+        $elements = json_decode($urlJson[0]->elements);
+        $data->urlJson[0]->elements = $elements;
+        // dd($urlJson, $elements);
+        print_r($data);
+        dd($data);
+        /** @var  $mainClassId */
+        $mainClassId = $request->input('mainClassId');
+        /** @var  $subClassId */
+        $subClassId = $request->input('subClassId');
+        /** @var  $showType */
+        $showType = $request->input('showType');
+
+        /** @var  $mainClassId */
+        $mainClassId = $request->input('mainClassId');
+        /** @var  $secondCategoryList */
+        $secondCategoryList = Category::query()
+            ->where('type', 1)
+            ->where('pid', $mainClassId)
+            ->orderBy('sort')
+            ->pluck('name', 'id')->toArray();
+
+        return $this->success([
+            'data' => $secondCategoryList
+        ]);
+    }
+
+    /**
+     * 抓取婚贝模板数据
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+     * @throws GuzzleException
+     */
+    public function sceneCrawl(Request $request)
+    {
+        /** @var  $code */
+        $code = $request->input('code');
+        if (Scene::query()->where('source_code', $code)->exists()) {
+            return $this->error('模板[' . $code . ']已存在');
+        }
+
+        /** @var  $data */
+        $data = $request->input('data');
+        /** @var  $data */
+        $data = json_decode($data);
+        if (empty($data)) {
+            admin_error('获取请柬邀请函[' . $code . ']模板信息失败，请确认后重试');
+            return redirect()->away(route('crawl.handle'));
+        }
+        /** @var  $urlJson */
+        $urlJson = json_decode($data->urlJson);
+        if (!isset($data->urlJson) || !isset($urlJson[0]->elements)) {
+            admin_error('获取请柬邀请函[' . $code . ']模板信息失败，请确认后重试');
+            return redirect()->away(route('crawl.handle'));
+        }
+        $data->urlJson = $urlJson;
+        /** @var  $elements */
+        $elements = json_decode($urlJson[0]->elements);
+        // $data->urlJson[0]->elements = $elements;
+        $data->urlJson[0]->elements = array_chunk($elements, 10);;
+
+        /** @var  $mainClassId */
+        $mainClassId = $request->input('mainClassId');
+        /** @var  $subClassId */
+        $subClassId = $request->input('subClassId');
+        /** @var  $showType */
+        $showType = $request->input('showType');
+
+        /** @var  $cover */
+        $cover = '';
+        if (isset($data->global->wximg) && $data->global->wximg != '') {
+            /** @var  $cover */
+            $cover = $this->storeSrcFile($data->global->wximg);
+        }
+        /** @var  $musicUrl */
+        $musicUrl = '';
+        if (is_string($data->music)) {
+            /** @var  $audio */
+            $audio = json_decode($data->music, true);
+            if (isset($audio['url'])) {
+                $musicUrl = storeFile($audio['url'], 'scene');
+            }
+        }
+        /** @var  $attrs */
+        $attrs = [
+            'name' => $data->title ?? '',
+            'description' => $data->desc ?? '',
+            'cover' => $cover ?? '',
+            'is_luckmoney' => 1,
+            'is_gift' => 1,
+            'is_wish' => 1,
+            'price' => 0,
+            'main_class_id' => $mainClassId,
+            'sub_class_id' => $subClassId,
+            'show_type' => $showType,
+            'is_show_btn' => 1,
+            'is_show_preview' => 1,
+            'is_show_guide' => 1,
+            'is_wish_h5' => 1,
+            'barrage_text' => '送上您的祝福',
+            'end_page' => 1,
+            'property' => [
+                'wxCount' => 0,
+                'autoFlipTime' => 3,
+                'yqcAd' => false,
+                'autoFlip' => false,
+                'slideNumber' => true,
+                'triggerLoop' => true,
+                'forbidHandFlip' => false,
+                'shareDes' => [
+                    'title' => $data->title ?? '',
+                    'description' => $data->desc ?? '',
+                ],
+                'wxClickFarmerCount' => 0,
+                'editorModel' => 1
+            ]
+        ];
+        /** @var  $attrs */
+        $attrs = array_merge($attrs, [
+            'code' => $this->generateSceneCode(),
+            'source_code' => $code,
+            'music_url' => $musicUrl
+        ]);
+        /** @var  $sceneModel */
+        $sceneModel = new Scene($attrs);
+
+        // $extend = $element['extend'] ?? [];
+        /** @var  $compIds */
+        $compIds = [];
+        /** @var  $sceneNum */
+        $sceneNum = 1;
+        /** @var  $scenePageModelList */
+        $scenePageModelList = [];
+        /** @var  $srcFields */
+        $srcFields = ['src', 'originSrc', 'svgSrc', 'maskSrc', 'imgSrc'];
+
+        foreach ($data->urlJson[0]->elements as $elements) {
+
+            /** @var  $num */
+            $num = 1;
+            /** @var  $content */
+            $content = [];
+            /** @var  $extend */
+            $extend = [];
+            /** @var  $compIds */
+            $compIds = [];
+            foreach ($elements as &$element) {
+                if ($element->type != 'image') {
+                    continue;
+                }
+                /** @var  $property */
+                $property = '';
+
+                /** @var  $extend */
+                // $extend = $element['extend'] ?? [];
+                /** @var  $content */
+                // $content = [['content' => '', 'css' => $element->css]] ?? [];
+                $compIds[] = $element['id'];
+                foreach ($srcFields as $field) {
+                    $src = $element->properties->$field ?? '';
+                    if (!empty($src)) {
+                        $element->properties->$field = $this->storeSrcFile($src);
+                    }
+                }
+
+                /** @var  $imgStyle */
+                $imgStyle = [
+                    'width' => $element->css->width ?? '',
+                    'height' => $element->css->height ?? '',
+                    'marginTop' => $element->css->top ?? '0px',
+                    'marginLeft' => $element->css->left ?? '0px'
+                ];
+                $element->properties->imgStyle = $imgStyle;
+
+                /** @var  $anim */
+                $anim = $element->properties->anim ?? '';
+                if (empty($anim)) {
+                    $anim = [[
+                        'type' => 1,
+                        'direction' => 0,
+                        'duration' => 2,
+                        'delay' => 0,
+                        'countNum' => 1,
+                        'interval' => 0,
+                        'count' => null
+                    ]];
+                }
+                $element->properties->anim = $anim;
+
+                /** @var  $content */
+                $content[] = [
+                    [
+                        'content' => '',
+                        'css' => $element->css,
+                        'properties' => $element->properties,
+                        'id' => $element->id,
+                        'num' => $num-1,
+                        'sceneId' => $code,
+                        'title' => null,
+                        'type' => 4
+                    ]
+                ] ?? [];
+    //            /** @var  $content */
+    //            $content = $element;
+                $num++;
+            }
+
+            if (empty($extend)) {
+                $extend = [
+                    'screens' => [
+                        'compIds' => $compIds,
+                        'id' => 'layer:'.mt_rand(1000000000, 9999999999)
+                    ]
+                ];
+            }
+
+            $scenePageModelList[] = new ScenePage([
+                'num' => $sceneNum,
+                'content' => $content,
+                'extend' => $extend,
+                'property' => $property
+            ]);
+            $sceneNum++;
+        }
+
+        DB::transaction(function () use ($sceneModel, $scenePageModelList) {
+            $sceneModel->save();
+            $sceneId = $sceneModel->id;
+            foreach ($scenePageModelList as $page) {
+                $page->scene_id = $sceneId;
+                $page->save();
+            }
+        });
+        return $this->success();
+    }
+
+    /**
+     * 生成模板编
+     * @return \Illuminate\Http\RedirectResponse|string
+     */
+    private function generateSceneCode()
+    {
+        $tryCount = 0;
+        while ($tryCount < 5) {
+            $code = strtoupper(uniqid('DXT'));
+            if (!Scene::query()->where('code', $code)->exists()) {
+                return $code;
+            }
+            $tryCount++;
+        }
+        admin_error('生成模板编号失败, 请重试');
+
+        return redirect()->away(route('crawl.handle'));
+    }
+
+    /**
+     * 保存文件
+     * @param $src
+     * @return string
+     * @throws GuzzleException
+     */
+    private function storeSrcFile($src)
+    {
+        /** @var  $src */
+        $src = preg_replace( '/\?.*$/', '', $src);
+        /** @var  $extension */
+        $extension = pathinfo($src)['extension'] ?? null;
+        /** @var  $type */
+        $type = null;
+        if (is_null($extension)) {
+            $type = 'png';
+        }
+
+        return storeFile($src, 'scene', $type);
     }
 
     public function info(Request $request)
@@ -267,6 +721,11 @@ class SceneController extends Controller
         $sentList = GiftRecord::query()->where('type', GiftRecord::TYPE_GIFT)
             ->where('scene_id', $id)
             ->get();
+        if (!empty($sentList)) {
+            foreach ($sentList as &$cell) {
+                $cell['icon'] = Storage::disk('static')->url($cell['icon']);
+            }
+        }
         if (!empty($defaultGift)) {
             $sentList->prepend([
                 'icon' => Storage::disk('static')->url($defaultGift['icon']),
@@ -1179,6 +1638,7 @@ class SceneController extends Controller
         $userId = Auth::user()->id;
         $page = ScenePage::query()
             ->whereRaw('exists (select * from scene where id = ' . $sceneId . ' and user_id = ' . $userId . ')')
+            ->whereRaw('exists (select * from scene where id = ' . $sceneId . ')')
             ->find($pageId);
         if (empty($page)) {
             return $this->error('非法请求');

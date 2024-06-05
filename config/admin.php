@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 return [
 
@@ -158,7 +158,8 @@ return [
         // Image and file upload path under the disk above.
         'directory' => [
             'image' => 'images',
-            'file'  => 'files',
+            //'file'  => 'files',
+            'file'  => '',
         ],
     ],
 

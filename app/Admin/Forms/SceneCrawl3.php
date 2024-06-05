@@ -45,7 +45,6 @@ class SceneCrawl3 extends Form
         $mainClassId = $request->input('mainClassId');
         /** @var  $subClassId */
         $subClassId = $request->input('subClassId');
-
         if (Scene::query()->where('source_code', $code)->exists()) {
             admin_error('模板[' . $code . ']已存在');
             return redirect()->away(route('scene.crawl3'));
@@ -73,32 +72,119 @@ class SceneCrawl3 extends Form
     }
 
     /**
+     * 初始化生成详情数据
+     * @param int $sceneId
+     * @return \Illuminate\Http\RedirectResponse|void
      * @throws GuzzleException
      * @throws \JsonException
      */
-    private function initSceneInfo($code)
+    private function initSceneInfo(int $sceneId)
     {
+        // Create a client with headers and a base URI
         /** @var  $client */
-        $client = new Client();
-        /** @var  $url */
-        $url = sprintf('https://h5.hunbei.com/view/%s', $code);
+        $client = new Client([
+            'headers' => [
+                'Content-Length' => 57,
+                'Content-Type' => 'application/x-www-form-urlencoded',
+                'Host' => 'h5.hunbei.com'
+            ],
+            'base_uri' => 'https://h5.hunbei.com'
+        ]);
         /** @var  $response */
-        $response = $client->request('GET', $url);
-        $response = $response->getBody()->getContents();
-        $matches = [];
-        preg_match('/var scene = \{id:(.+?),/', $response, $matches);
-        $sceneId = $matches[1] ?? '';
-        preg_match('/var read_sc_ac="(.+?)";/', $response, $matches);
-        $accessKey = $matches[1] ?? '';
-        $sceneInfoUrl = sprintf('http://dzqj.dianziyaoqinghan.com/index.php?c=scene&a=view&id=%s&c_ac=%s&time=%s', $sceneId, $accessKey, intval(microtime(true) * 1000));
-        $response = $client->request('GET', $sceneInfoUrl);
-        $response = json_decode(trim(str_replace(["\r\n", "\t", "\r", "\n"], "", htmlspecialchars_decode($response->getBody()->getContents())), chr(239) . chr(187) . chr(191)), true, 512, JSON_THROW_ON_ERROR);
-        if (empty($response['obj'])) {
+        $response = $client->request('POST', '/index/Preview/getScene1', [
+            'form_params' => [
+                'scene_id' => $sceneId,
+                'preview' => 1,
+                'openid' => '',
+                'fUser' => '',
+                'stop' => 0,
+                'show' => 'all'
+            ]
+        ]);
+        /** @var  $data */
+        $data = json_decode($response->getBody()->getContents());
+        dd($this->decryptByAES($data->data));
+        //dd(json_decode($response->getBody()->getContents()));
+        /*if (empty($response['obj'])) {
             admin_error('获取请柬邀请函[' . $code . ']模板信息失败，请确认后重试');
             return redirect()->away(route('scene.crawl2'));
         }
         $this->sceneInfo = $response['obj'];
-        $this->scenePageList = $response['list'];
+        $this->scenePageList = $response['list'];*/
+    }
+
+    /**
+     * @param string $string
+     * @param string $key
+     * @return false|string|void
+     */
+    private function decryptByAES(string $string, string $key='SMCs5dzwOfTePGZh') {
+        try {
+            $string = base64_decode(hex2bin($string));
+            $string = $this->base64Stringify($this->hexParse($string));
+            $iv_size = openssl_cipher_iv_length('AES-256-CBC');
+            $iv = substr($string, 0, $iv_size);
+            $string = substr($string, $iv_size);
+            $result = openssl_decrypt($string, 'AES-256-ECB', $key, OPENSSL_RAW_DATA | OPENSSL_NO_PADDING, $iv);
+
+            return $result;
+        } catch (\Exception $exception) {
+            dd($exception->getMessage());
+        }
+    }
+
+    /**
+     * AES解密
+     * @param string $string
+     * @param string $key
+     * @return string
+     */
+    private function decryptBakByAES(string $string, string $key='SMCs5dzwOfTePGZh')
+    {
+        try {
+            //$string = base64_decode(hex2bin($string));// 对base64编码的字符串进行解码
+            $string = base64_decode($string);// 对base64编码的字符串进行解码
+            $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+            $iv = substr($string, 0, $iv_size);// 截取IV值
+            $string = substr($string, $iv_size);// 截取密文部分
+            $result = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $string, MCRYPT_MODE_CBC, $iv);
+
+            return $result;
+        } catch (\Exception $exception) {
+            dd($exception->getMessage());
+        }
+    }
+
+    /**
+     * 将十六进制字符串转换为WordArray
+     * @param $hexString
+     * @return array
+     */
+    private function hexParse($hexString) {
+        $length = strlen($hexString);
+        $byteArray = array_fill(0, $length / 2, 0);
+
+        for ($i = 0; $i < $length; $i += 2) {
+            $byteArray[$i / 2] = hexdec($hexString[$i] . $hexString[$i + 1]);
+        }
+
+        return $byteArray;
+    }
+
+    /**
+     * 将WordArray转换为Base64字符串
+     * @param $wordArray
+     * @return string
+     */
+    private function base64Stringify($wordArray) {
+        $length = count($wordArray);
+        $base64String = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $base64String .= base64_encode($wordArray[$i]);
+        }
+
+        return $base64String;
     }
 
     /**

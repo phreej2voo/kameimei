@@ -14304,7 +14304,12 @@
                 }, t.showYqh = function () {
                     if (!t.state.show_yqh) {
                         var e = document.getElementById("zdyq_audio");
-                        e.paused && e.play(), t.setState({show_yqh: !0})
+                        // e.paused && e.play(), t.setState({show_yqh: !0})
+                        if (e !== null) {
+                            // e.paused && e.play(), t.setState({show_yqh: !0})
+                            e.paused && e.play()
+                        }
+                        t.setState({show_yqh: !0})
                     }
                 }, t
             }

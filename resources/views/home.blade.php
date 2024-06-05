@@ -8,7 +8,7 @@
     <meta name="keywords" content="微喜帖,微信喜帖,电子喜帖,电子请柬,电子邀请函,电子请帖">
     <meta name="description" content="大喜帖微信电子喜帖让您的邀请更轻松、与从不同。"/>
     <meta name="baidu-site-verification" content="codeva-1Wl7eAoIpD" />
-    <link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://m.daxitie.com/static/css/4.7.0/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.staticfile.org/weui/1.1.2/style/weui.min.css">
     <link href="{{asset('static/css/editor.css')}}" rel="stylesheet">
 </head>

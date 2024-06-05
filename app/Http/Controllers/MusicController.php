@@ -21,7 +21,7 @@ class MusicController extends Controller
         if (empty($scene)) {
             return $this->error('非法请求');
         }
-        $categoryList = Category::query()->where('type', Category::TYPE_MUSIC)
+        $categoryList = Category::query()->where('type', Category::TYPE_MUSIC)->where('pid', 0)
             ->orderBy('sort')->pluck('name')->toArray();
         array_unshift($categoryList, '全部');
         return $this->success([
@@ -141,14 +141,23 @@ class MusicController extends Controller
     {
         $code = $request->input('token');
         $user = User::query()->where('music_token', $code)->first();
-        
-       
+
         if (empty($user)) {
             return $this->error('当前页面链接已更新，请重试');
         }
         $file = $_FILES['file'];
         $originFileName = $file['name'];
-        $storeFileName = storeFile($file['tmp_name'], 'scene');
+        /** @var  $fileType */
+        $fileType = 'mp3';
+        if (strpos($originFileName, 'm4a') === 0) {
+            $fileType = 'm4a';
+        }
+
+        list(, $fileType) = explode('/', $file['type']);
+        if (!in_array($fileType, ['mp3', 'm4a'])) {
+            $fileType = 'mp3';
+        }
+        $storeFileName = storeFile($file['tmp_name'], 'scene', $fileType);
       
         $music = new Music([
             'name' => $originFileName,

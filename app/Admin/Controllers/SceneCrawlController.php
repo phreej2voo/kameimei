@@ -55,6 +55,26 @@ class SceneCrawlController extends AdminController
      */
     public function index3(Content $content)
     {
+        return $content
+            ->title('婚贝模板采集')
+            ->description('本采集功能目前仅支持婚贝模板采集')
+            ->row(function (Row $row) {
+                $row->column(7, function (Column $column) {
+                    $column->append(SceneCrawl::hunbeiCrawlPage());
+                });
+
+                $row->column(5, function (Column $column) {
+                    $column->append(SceneCrawl::recentlyCrawlSceneList());
+                });
+            });
+    }
+
+    /**
+     * @param Content $content
+     * @return Content
+     */
+    public function index4(Content $content)
+    {
         $crawlForm = new SceneCrawl3();
         return $content
             ->title('婚贝模板采集')

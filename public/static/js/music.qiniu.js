@@ -241,6 +241,7 @@ function QiniuJsSDK() {
         op.init.Error = function() {};
         op.init.FileUploaded = function() {};
 
+        that.sid = op.sid;
         that.uptoken_url = op.uptoken_url;
         that.token = '';
         that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
@@ -314,6 +315,7 @@ function QiniuJsSDK() {
         plupload.extend(option, op, {
             url: that.domain.concat('/music/upload'),
             multipart_params: {
+                sid: that.sid,
                 token: ''
             }
         });
@@ -353,6 +355,7 @@ function QiniuJsSDK() {
                         'token': that.token
                     };
                 }
+                multipart_params_obj['sid'] = that.sid;
 
                 var x_vars = op.x_vars;
                 if (x_vars !== undefined && typeof x_vars === 'object') {

@@ -13980,6 +13980,7 @@
                 }, n.submitReport = function () {
                     n.props.previewStore.submitReport()
                 }, n.goToMore = function () {
+                    console.log('n.props.previewStore.isMiniprogram', n.props.previewStore.isMiniprogram, 'scene.is_wish_h5', scene.is_wish_h5)
                     if (n.props.previewStore.isMiniprogram) wx.miniProgram.switchTab({url: "../../../pages/home/home"}); else {
                         var e = Hr ? "https://m.daxitie.com" : bn.editor;
                         if (1 == scene.is_wish_h5) {
@@ -14430,7 +14431,7 @@
                     return H.a.createElement("div", {className: "kmm_danmu"}, 0 < t.length && H.a.createElement("section", {className: "wish_list"}, H.a.createElement("div", {
                         className: "bd",
                         style: {transform: "translateY(".concat(n, "px)"), transition: "transform 1s"}
-                    }, H.a.createElement(li, {dmWishList: t}))), 0 < r.length && H.a.createElement("section", {className: "gift_list"}, H.a.createElement("div", {className: "gift_layout"}, H.a.createElement("div", {className: "g_y"}, H.a.createElement("p", null, H.a.createElement("img", {src: r[i].icon || scene.preview_domain.concat("static/img/ico_yuanbao.png")}))), H.a.createElement("div", {className: "g_y gy_msg"}, H.a.createElement("h5", null, H.a.createElement("i", null, r[i].name || r[i].uname), " 送了 ", r[i].title), H.a.createElement("span", null, r[i].info || r[i].fee + " 元")))))
+                    }, H.a.createElement(li, {dmWishList: t}))), 0 < r.length && H.a.createElement("section", {className: "gift_list"}, H.a.createElement("div", {className: "gift_layout"}, H.a.createElement("div", {className: "g_y"}, H.a.createElement("p", null, H.a.createElement("img", {src: r[i].icon || scene.preview_domain.concat("static/img/ico_yuanbao.png")}))), H.a.createElement("div", {className: "g_y gy_msg"}, H.a.createElement("h5", null, H.a.createElement("i", null, r[i].name || r[i].uname), " 送了 ", r[i].title), H.a.createElement("span", null, r[i].info || r[i].price + " 元")))))
                 }
             }]), t
         }(T.Component)) || mr, pi = (n(341), (new _n).isPc(), ie("previewStore")(vr = Ee(vr = function (e) {
